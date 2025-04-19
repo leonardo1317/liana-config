@@ -1,6 +1,6 @@
 <img src="liana-logo.png" alt="Liana Logo" width="200"/>
 
-# Liana (Java)
+# Liana
 
 **Liana** es una librería ligera que permite la configuración y uso de distintos tipos de clientes (REST, MongoDB, Kafka, SQL y más) sin acoplarse a ningún framework.  
 Está pensada para ser **fácil de usar**, **extensible** y **completamente configurable** a través de archivos `.yml` o `.properties`.

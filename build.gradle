@@ -9,6 +9,9 @@ java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
+
+	sourceCompatibility = JavaVersion.VERSION_11
+	targetCompatibility = JavaVersion.VERSION_11
 }
 
 repositories {
@@ -16,8 +19,8 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.yaml:snakeyaml:2.4'
 	implementation 'org.apache.commons:commons-configuration2:2.11.0'
+	implementation 'org.yaml:snakeyaml:2.4'
 	implementation 'commons-io:commons-io:2.18.0'
 	implementation("com.fasterxml.jackson.core:jackson-databind:2.19.0-rc2")
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
