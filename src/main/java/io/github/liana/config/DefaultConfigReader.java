@@ -22,11 +22,14 @@ class DefaultConfigReader implements ConfigReader {
 
     @Override
     public <T> Optional<T> getAllConfigAs(Class<T> clazz) {
+        requireNonNull(clazz, "clazz must not be null");
         return config.getAllConfigAs(clazz);
     }
 
     @Override
     public boolean hasKey(String key) {
+        requireNonNull(key, "key must not be null");
+        requireNonBlank(key, "key must not be blank");
         return config.hasKey(key);
     }
 
@@ -38,6 +41,7 @@ class DefaultConfigReader implements ConfigReader {
 
     @Override
     public <T> Optional<T> get(String key, TypeOf<T> type) {
+        requireNonNull(key, "key must not be null");
         requireNonBlank(key, "key must not be blank");
         requireNonNull(type, "type must not be null");
         return config.get(key, type.getType());
@@ -46,7 +50,6 @@ class DefaultConfigReader implements ConfigReader {
     @Override
     public <E> List<E> getList(String key, Class<E> clazz, List<E> defaultValue) {
         validateKeyAndType(key, clazz);
-        requireNonNull(defaultValue, "defaultValue must not be blank");
         List<E> list = config.getList(key, clazz);
         return list.isEmpty() ? defaultValue : list;
     }
@@ -54,13 +57,13 @@ class DefaultConfigReader implements ConfigReader {
     @Override
     public <V> Map<String, V> getMap(String key, Class<V> clazz, Map<String, V> defaultValue) {
         validateKeyAndType(key, clazz);
-        requireNonNull(defaultValue, "defaultValue must not be blank");
         Map<String, V> map = config.getMap(key, clazz);
         return map.isEmpty() ? defaultValue : map;
     }
 
     private void validateKeyAndType(String key, Class<?> clazz) {
+        requireNonNull(key, "key must not be null");
         requireNonBlank(key, "key must not be blank");
-        requireNonNull(clazz, "Type must not be null");
+        requireNonNull(clazz, "clazz must not be null");
     }
 }

@@ -1,6 +1,6 @@
 package io.github.liana.config;
 
-public final class ConfigDefaults {
+final class ConfigDefaults {
     public static final String PROVIDER = "classpath";
     public static final String PROFILE_VAR = "profile";
     public static final String DEFAULT_PROFILE = "default";
