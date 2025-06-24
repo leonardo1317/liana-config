@@ -59,7 +59,7 @@ Liana provides essential configuration capabilities designed for flexibility and
 ```xml
 <dependency>
   <groupId>io.github.liana</groupId>
-  <artifactId>liana-core</artifactId>
+  <artifactId>liana-config</artifactId>
   <version>1.0.0</version>
 </dependency>
 ```
@@ -125,33 +125,14 @@ servers:
 public class AppConfig {
     private String name;
 
-    public String getName() { 
-        return name; 
-    }
-    public void setName(String name) { 
-        this.name = name; 
-    }
+    // Getters and Setters omitted for brevity
 }
 
 public class ServerConfig {
     private String host;
     private int port;
 
-    public String getHost() { 
-        return host; 
-    }
-    
-    public void setHost(String host) { 
-        this.host = host; 
-    }
-
-    public int getPort() { 
-        return port; 
-    }
-    
-    public void setPort(int port) { 
-        this.port = port; 
-    }
+    // Getters and Setters omitted for brevity
 }
 ```
 
@@ -303,4 +284,3 @@ Leonardo R.
 ---
 
 > "Liana: Configuration that adapts to you, not the other way around."
-
