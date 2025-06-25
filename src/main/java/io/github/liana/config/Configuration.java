@@ -6,15 +6,16 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface Configuration {
-    boolean hasKey(String key);
 
-    <T> Optional<T> get(String key, Type type);
+  boolean hasKey(String key);
 
-    <E> List<E> getList(String key, Class<E> clazz);
+  <T> Optional<T> get(String key, Type type);
 
-    <V> Map<String, V> getMap(String key, Class<V> clazz);
+  <E> List<E> getList(String key, Class<E> clazz);
 
-    Map<String, Object> getAllConfig();
+  <V> Map<String, V> getMap(String key, Class<V> clazz);
 
-    <T> Optional<T> getAllConfigAs(Class<T> clazz);
+  Map<String, Object> getAllConfig();
+
+  <T> Optional<T> getAllConfigAs(Class<T> clazz);
 }

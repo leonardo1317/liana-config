@@ -17,126 +17,127 @@ import static java.util.Objects.requireNonNull;
 
 public final class JsonPathAccessor {
 
-    private static final ObjectMapper mapper = ObjectMapperProvider.getJsonInstance();
+  private static final ObjectMapper mapper = ObjectMapperProvider.getJsonInstance();
 
-    private JsonPathAccessor() {
+  private JsonPathAccessor() {
+  }
+
+  public static <T> Optional<T> get(Object source, Type targetType) {
+    requireNonNull(source, "Source object cannot be null");
+    requireNonNull(targetType, "Target type cannot be null");
+
+    JsonNode node = getNode(source);
+    if (node.isMissingNode()) {
+      return Optional.empty();
     }
 
-    public static <T> Optional<T> get(Object source, Type targetType) {
-        requireNonNull(source, "Source object cannot be null");
-        requireNonNull(targetType, "Target type cannot be null");
+    return Optional.ofNullable(convertValue(node, constructJavaType(targetType)));
+  }
 
-        JsonNode node = getNode(source);
-        if (node.isMissingNode()) {
-            return Optional.empty();
-        }
+  public static <T> Optional<T> get(Object source, String path, Type targetType) {
+    requireNonNull(source, "Source object cannot be null");
+    requireNonNull(path, "Path cannot be null");
+    requireNonNull(targetType, "Target type cannot be null");
 
-        return Optional.ofNullable(convertValue(node, constructJavaType(targetType)));
+    JsonNode node = getNode(source, path);
+    if (node.isMissingNode()) {
+      return Optional.empty();
     }
 
-    public static <T> Optional<T> get(Object source, String path, Type targetType) {
-        requireNonNull(source, "Source object cannot be null");
-        requireNonNull(path, "Path cannot be null");
-        requireNonNull(targetType, "Target type cannot be null");
+    return Optional.ofNullable(convertValue(node, constructJavaType(targetType)));
+  }
 
-        JsonNode node = getNode(source, path);
-        if (node.isMissingNode()) {
-            return Optional.empty();
-        }
+  public static <E> List<E> getList(Object source, String path, Class<E> targetType) {
+    requireNonNull(source, "Source object cannot be null");
+    requireNonNull(path, "Path cannot be null");
+    requireNonNull(targetType, "Target type cannot be null");
 
-        return Optional.ofNullable(convertValue(node, constructJavaType(targetType)));
+    JsonNode node = getNode(source, path);
+    if (node.isMissingNode() || !node.isArray()) {
+      return Collections.emptyList();
     }
 
-    public static <E> List<E> getList(Object source, String path, Class<E> targetType) {
-        requireNonNull(source, "Source object cannot be null");
-        requireNonNull(path, "Path cannot be null");
-        requireNonNull(targetType, "Target type cannot be null");
+    JavaType listType = safeConvert(
+        () -> mapper.getTypeFactory().constructCollectionType(List.class, targetType),
+        String.format("Invalid or unsupported target list type: %s", targetType.getName())
+    );
 
-        JsonNode node = getNode(source, path);
-        if (node.isMissingNode() || !node.isArray()) {
-            return Collections.emptyList();
-        }
+    List<E> list = convertValue(node, listType);
+    return Optional.ofNullable(list).orElse(Collections.emptyList());
+  }
 
-        JavaType listType = safeConvert(
-                () -> mapper.getTypeFactory().constructCollectionType(List.class, targetType),
-                String.format("Invalid or unsupported target list type: %s", targetType.getName())
-        );
+  public static <V> Map<String, V> getMap(Object source, String path, Class<V> targetType) {
+    requireNonNull(source, "Source object cannot be null");
+    requireNonNull(path, "Path cannot be null");
 
-        List<E> list = convertValue(node, listType);
-        return Optional.ofNullable(list).orElse(Collections.emptyList());
+    JsonNode node = getNode(source, path);
+    if (node.isMissingNode() || !node.isObject()) {
+      return Collections.emptyMap();
     }
 
-    public static <V> Map<String, V> getMap(Object source, String path, Class<V> targetType) {
-        requireNonNull(source, "Source object cannot be null");
-        requireNonNull(path, "Path cannot be null");
+    JavaType mapType = safeConvert(
+        () -> mapper.getTypeFactory().constructMapType(Map.class, String.class, targetType),
+        String.format("Invalid or unsupported target map type: %s", targetType.getName())
+    );
 
-        JsonNode node = getNode(source, path);
-        if (node.isMissingNode() || !node.isObject()) {
-            return Collections.emptyMap();
-        }
+    Map<String, V> resultMap = convertValue(node, mapType);
+    return Optional.ofNullable(resultMap).orElse(Collections.emptyMap());
+  }
 
-        JavaType mapType = safeConvert(
-                () -> mapper.getTypeFactory().constructMapType(Map.class, String.class, targetType),
-                String.format("Invalid or unsupported target map type: %s", targetType.getName())
-        );
+  public static boolean hasPath(Object source, String path) {
+    requireNonNull(source, "Source object cannot be null");
+    requireNonNull(path, "Path cannot be null");
 
-        Map<String, V> resultMap = convertValue(node, mapType);
-        return Optional.ofNullable(resultMap).orElse(Collections.emptyMap());
+    JsonNode node = getNode(source, path);
+    return !node.isMissingNode();
+  }
+
+  private static JsonNode getNode(Object source, String path) {
+    JsonNode tree = getNode(source);
+
+    String jsonPointer = toJsonPointer(path);
+
+    return safeConvert(
+        () -> tree.at(jsonPointer),
+        String.format("Invalid JSON pointer generated from path: %s", path)
+    );
+  }
+
+  private static JsonNode getNode(Object source) {
+    return safeConvert(
+        () -> mapper.valueToTree(source),
+        String.format("Failed to convert source to JSON tree. Source type: %s",
+            source.getClass().getName())
+    );
+  }
+
+  private static JavaType constructJavaType(Type targetType) {
+    return safeConvert(
+        () -> mapper.constructType(targetType),
+        String.format("Invalid or unsupported target type: %s", targetType.getTypeName())
+    );
+  }
+
+
+  private static String toJsonPointer(String path) {
+    return "/" + path.replace(".", "/")
+        .replaceAll("\\[(\\d+)]", "/$1");
+  }
+
+  private static <T> T convertValue(Object value, JavaType type) {
+
+    return safeConvert(
+        () -> mapper.convertValue(value, type),
+        String.format("Failed to convert value to target type: %s",
+            type.getTypeName())
+    );
+  }
+
+  private static <T> T safeConvert(Supplier<T> supplier, String errorMessage) {
+    try {
+      return supplier.get();
+    } catch (RuntimeException e) {
+      throw new ConversionException(errorMessage);
     }
-
-    public static boolean hasPath(Object source, String path) {
-        requireNonNull(source, "Source object cannot be null");
-        requireNonNull(path, "Path cannot be null");
-
-        JsonNode node = getNode(source, path);
-        return !node.isMissingNode();
-    }
-
-    private static JsonNode getNode(Object source, String path) {
-        JsonNode tree = getNode(source);
-
-        String jsonPointer = toJsonPointer(path);
-
-        return safeConvert(
-                () -> tree.at(jsonPointer),
-                String.format("Invalid JSON pointer generated from path: %s", path)
-        );
-    }
-
-    private static JsonNode getNode(Object source) {
-        return safeConvert(
-                () -> mapper.valueToTree(source),
-                String.format("Failed to convert source to JSON tree. Source type: %s", source.getClass().getName())
-        );
-    }
-
-    private static JavaType constructJavaType(Type targetType) {
-        return safeConvert(
-                () -> mapper.constructType(targetType),
-                String.format("Invalid or unsupported target type: %s", targetType.getTypeName())
-        );
-    }
-
-
-    private static String toJsonPointer(String path) {
-        return "/" + path.replace(".", "/")
-                .replaceAll("\\[(\\d+)]", "/$1");
-    }
-
-    private static <T> T convertValue(Object value, JavaType type) {
-
-        return safeConvert(
-                () -> mapper.convertValue(value, type),
-                String.format("Failed to convert value to target type: %s",
-                        type.getTypeName())
-        );
-    }
-
-    private static <T> T safeConvert(Supplier<T> supplier, String errorMessage) {
-        try {
-            return supplier.get();
-        } catch (RuntimeException e) {
-            throw new ConversionException(errorMessage);
-        }
-    }
+  }
 }

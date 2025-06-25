@@ -6,16 +6,17 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 final class ConfigMapCache<K, V> {
-    private volatile Map<K, V> cachedConfig = null;
 
-    public Map<K, V> get(Supplier<Map<K, V>> loader) {
+  private volatile Map<K, V> cachedConfig = null;
+
+  public Map<K, V> get(Supplier<Map<K, V>> loader) {
+    if (cachedConfig == null) {
+      synchronized (this) {
         if (cachedConfig == null) {
-            synchronized (this) {
-                if (cachedConfig == null) {
-                    cachedConfig = Collections.unmodifiableMap(new LinkedHashMap<>(loader.get()));
-                }
-            }
+          cachedConfig = Collections.unmodifiableMap(new LinkedHashMap<>(loader.get()));
         }
-        return cachedConfig;
+      }
     }
+    return cachedConfig;
+  }
 }

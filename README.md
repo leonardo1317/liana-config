@@ -10,7 +10,7 @@
 
 **Liana** is a lightweight, framework-agnostic Java configuration library designed for simplicity and flexibility. Inspired by the liana plant that adapts to any structure, Liana adapts to your application's needs—**not the other way around**.
 
-Liana abstracts configuration complexity and offers a unified API to load configurations from **YAML, JSON, XML, and Properties formats only**—without forcing the use of heavyweight frameworks.
+Liana abstracts configuration complexity and offers a unified API to load configurations from [supported formats](#supported-formats)—without forcing the use of heavyweight frameworks.
 
 ---
 
@@ -29,8 +29,8 @@ Liana prioritizes:
 
 ## Supported Formats
 
-- **YAML**
 - **Properties**
+- **YAML**
 - **JSON**
 - **XML**
 
@@ -40,15 +40,16 @@ Liana prioritizes:
 
 Liana provides essential configuration capabilities designed for flexibility and simplicity in Java applications:
 
-- **Multi-format support**: Load and merge multiple configuration files (YAML, JSON, Properties, XML) seamlessly.
+- **Multi-format support**: Load and merge multiple configuration files in [supported formats](#supported-formats).
 - **Ordered overrides**: Later-loaded files override earlier ones for environment-specific layering.
-- **Custom placeholder resolution**: Replace placeholders (e.g., `${profile}`) dynamically.
+- **Custom placeholder resolution**: Replace placeholders (e.g., `${profile}`) dynamically with user-defined variables.
 - **Variable injection**: Inject variables via fluent API or programmatically.
 - **Type-safe access**: Retrieve config as `String`, `int`, `boolean`, lists, maps, arrays, or POJOs.
-- **POJO and generic mapping**: Deserialize config sections into POJOs or generic structures using `TypeOf<T>`.
+- **POJO and generic mapping**: Deserialize config sections into POJOs or generic structures using `TypeOf<T>`. POJO fields should be private with public getters and setters.
 - **Complete config snapshot**: Access the full config tree as an unmodifiable `Map<String, Object>` or a full POJO.
 - **Thread-safe and immutable**: Config data is immutable after loading.
 - **Optional verbose logging**: Detailed logs for resource loading and resolution.
+- **Strict file validation**: Validates resource names against security and compatibility rules before loading.
 
 ---
 
@@ -82,7 +83,7 @@ dependencies {
 ConfigResourceLocation location = ConfigResourceLocation.builder()
     .addResources("application.properties", "application-${profile}.yaml")
     .addVariables("profile", "dev")
-    .verboseLogging(true)
+    .verboseLogging(true) // optional, default is false. Enables detailed logs of the loading process.
     .build();
 ```
 If you define the configuration like this:
@@ -102,12 +103,24 @@ Liana will apply the following **defaults**:
 
 This means Liana will search the classpath for:
 
-1. A file named `application` (in any supported format).
+1. A file named `application` (in any [supported format](#supported-formats)).
 2. A file matching the pattern `application-${profile}` (with `${profile}` resolved from the environment variable `LIANA_PROFILE`).
 
 If `LIANA_PROFILE` is **not set**, Liana uses the default profile value: **default**.
 
-### Example configuration file:
+### Example configuration files (per format):
+
+**Properties:**
+
+```properties
+app.name=Liana
+servers[0].host=localhost
+servers[0].port=8080
+servers[1].host=example.com
+servers[1].port=9090
+```
+
+**YAML:**
 
 ```yaml
 app:
@@ -117,6 +130,40 @@ servers:
     port: 8080
   - host: "example.com"
     port: 9090
+```
+
+**JSON:**
+
+```json
+{
+  "app": {
+    "name": "Liana"
+  },
+  "servers": [
+    { "host": "localhost", "port": 8080 },
+    { "host": "example.com", "port": 9090 }
+  ]
+}
+```
+
+**XML:**
+
+```xml
+<config>
+    <app>
+        <name>Liana</name>
+    </app>
+    <servers>
+        <server>
+            <host>localhost</host>
+            <port>8080</port>
+        </server>
+        <server>
+            <host>example.com</host>
+            <port>9090</port>
+        </server>
+    </servers>
+</config>
 ```
 
 ### Example POJO classes:
@@ -154,25 +201,27 @@ List<ServerConfig> servers = reader.get("servers", new TypeOf<List<ServerConfig>
 ### Optional Variants:
 
 ```java
-Optional<AppConfig> optionalConfig = reader.getOptional("app", new TypeOf<AppConfig>() {});
-Optional<List<ServerConfig>> optionalServers = reader.getOptional("servers", new TypeOf<List<ServerConfig>>() {});
+Optional<AppConfig> optionalConfig = reader.get("app", AppConfig.class);
+Optional<List<ServerConfig>> optionalServers = reader.get("servers", new TypeOf<List<ServerConfig>>() {});
 ```
 
 ---
 
 ## ConfigResourceLocation API
 
-### Overview
+### Strict File Validation
 
-Specifies **where and how configuration resources are loaded**. This includes:
+Liana enforces strict validation for file names to ensure security and compatibility across [supported formats](#supported-formats).
 
-- **Resource provider** (e.g., "classpath").
-- **Multiple resource files** (mixed formats supported).
-- **Variable substitution support**, allowing user-defined placeholders like `${customVar}`.
-- **Credential management** (useful for secret or external resources).
-- **Verbose logging** for debugging configuration loading order and status.
+### Allowed File Name Rules
 
-It also defines the **loading order**, crucial for resolving overrides when multiple resources provide the same key.
+| Rule                                                                                 | Description                                                             |
+| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| Must not contain `..` or `../`                                                       | Prevents directory traversal attacks                                    |
+| Must not be blank, exceed 255 characters, or contain `%`                             | Ensures filename validity                                               |
+| Must not start or end with `.` or contain spaces                                     | Enforces consistency and cross-platform support                         |
+| Must match the regex pattern: `^[a-zA-Z0-9_\-]+(?:/[a-zA-Z0-9_\-]+)*\.[a-zA-Z0-9]+$` | Enforces safe character usage and structure                             |
+| Must have a supported extension                                                      | Only files ending in [supported formats](#supported-formats) extensions |
 
 ### Builder Methods
 
@@ -192,19 +241,7 @@ It also defines the **loading order**, crucial for resolving overrides when mult
 
 ## ConfigReader API
 
-### Overview
-
-Provides type-safe and flexible methods for accessing configuration values loaded from one or multiple sources. It allows:
-
-- Retrieval of **basic types** (`String`, `int`, `boolean`, etc.).
-- Handling of **optional and required keys**, with or without default values.
-- Retrieval of **complex and generic types** via `TypeOf<T>`.
-- **Conversion of entire configuration to POJO objects** via `getAllConfigAs(Class<T>)`.
-- Support for lists (`List<T>`), maps (`Map<String, T>`), and arrays (`String[]`).
-- Verification of the existence of keys via `hasKey(String)`.
-- Complete configuration snapshot as `Map<String, Object>` via `getAllConfig()`.
-
-This API abstracts any format (YAML, JSON, XML, Properties) behind a simple and fluent Java interface, handling missing keys, type conversion, and defaults gracefully.
+The following table documents all available methods in the `ConfigReader` API:
 
 | Method                                               | Description                                                           | Example                                                                      |
 | ---------------------------------------------------- |-----------------------------------------------------------------------| ---------------------------------------------------------------------------- |

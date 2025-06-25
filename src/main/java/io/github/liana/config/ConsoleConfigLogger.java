@@ -53,15 +53,15 @@ final class ConsoleConfigLogger implements ConfigLogger {
     }
 
     @Override
-    public void error(Supplier<String> message, Exception ex) {
-        log(LogLevel.ERROR, message, ex);
+    public void error(Supplier<String> message, Exception e) {
+        log(LogLevel.ERROR, message, e);
     }
 
     private void log(LogLevel level, Supplier<String> supplier) {
         log(level, supplier, null);
     }
 
-    private void log(LogLevel level, Supplier<String> supplier, Exception ex) {
+    private void log(LogLevel level, Supplier<String> supplier, Exception e) {
         if (supplier == null || !level.isEnabled(configuredLevel)) {
             return;
         }
@@ -76,8 +76,8 @@ final class ConsoleConfigLogger implements ConfigLogger {
         PrintStream outputStream = System.out;
         outputStream.println(formattedMessage);
 
-        if (ex != null) {
-            ex.printStackTrace(outputStream);
+        if (e != null) {
+            e.printStackTrace(outputStream);
         }
     }
 }

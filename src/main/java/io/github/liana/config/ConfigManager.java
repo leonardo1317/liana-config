@@ -1,5 +1,6 @@
 package io.github.liana.config;
 
 public interface ConfigManager {
-    ConfigReader load(ConfigResourceLocation location);
+
+  ConfigReader load(ConfigResourceLocation location);
 }

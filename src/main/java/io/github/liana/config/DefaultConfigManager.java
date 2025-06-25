@@ -63,8 +63,8 @@ final class DefaultConfigManager implements ConfigManager {
                     reference.getResourceName(), allConfig.size(), durationMs));
 
             return Optional.of(allConfig);
-        } catch (Exception ex) {
-            log.error(reference::getResourceName, ex);
+        } catch (Exception e) {
+            log.error(reference::getResourceName, e);
             return Optional.empty();
         }
     }
