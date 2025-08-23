@@ -70,47 +70,12 @@ public class ImmutableConfigMap {
   }
 
   /**
-   * Retrieves the value associated with the given key, or returns the default value if the key is
-   * not present.
-   *
-   * @param key          the key whose associated value is to be returned
-   * @param defaultValue the default value to return if the key is not found
-   * @return the associated value, or {@code defaultValue} if the key is not present
-   * @throws NullPointerException if {@code key} is {@code null}
-   */
-  public String getOrDefault(String key, String defaultValue) {
-    requireNonNull(key);
-    return map.getOrDefault(key, defaultValue);
-  }
-
-  /**
-   * Checks whether the given key is present in the map.
-   *
-   * @param key a non-null key
-   * @return {@code true} if the key exists, {@code false} otherwise
-   * @throws NullPointerException if {@code key} is {@code null}
-   */
-  public boolean containsKey(String key) {
-    requireNonNull(key);
-    return map.containsKey(key);
-  }
-
-  /**
    * Returns {@code true} if the map contains no key-value mappings.
    *
    * @return {@code true} if empty, {@code false} otherwise
    */
   public boolean isEmpty() {
     return map.isEmpty();
-  }
-
-  /**
-   * Returns the number of key-value mappings in this map.
-   *
-   * @return the size of the map
-   */
-  public int size() {
-    return map.size();
   }
 
   /**

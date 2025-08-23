@@ -37,7 +37,7 @@ final class JsonConfigLoader implements ConfigLoader {
   public Configuration load(ConfigResource resource) {
     validateResource(resource);
     try (InputStream input = resource.getInputStream()) {
-      return new JacksonConfiguration(ObjectMapperProvider.getJsonInstance(), input);
+      return new JacksonConfiguration(ObjectMappers.getJsonInstance(), input);
     } catch (IOException e) {
       throw new ConfigLoaderException(
           "Error loading Json config from " + resource.getResourceName(), e);

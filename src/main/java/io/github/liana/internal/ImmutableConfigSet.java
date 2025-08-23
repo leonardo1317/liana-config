@@ -21,31 +21,12 @@ public class ImmutableConfigSet {
   }
 
   /**
-   * Checks if the set contains the given value.
-   *
-   * @param value a non-null value
-   * @return {@code true} if present; {@code false} otherwise
-   */
-  public boolean contains(String value) {
-    return set.contains(value);
-  }
-
-  /**
    * Returns {@code true} if the set is empty.
    *
    * @return {@code true} if empty; {@code false} otherwise
    */
   public boolean isEmpty() {
     return set.isEmpty();
-  }
-
-  /**
-   * Returns the number of values in the set.
-   *
-   * @return the size of the set
-   */
-  public int size() {
-    return set.size();
   }
 
   public Set<String> toSet() {

@@ -1,7 +1,5 @@
 package io.github.liana.config;
 
-import static io.github.liana.internal.PlaceholderUtils.replace;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,56 +14,59 @@ import java.util.function.Consumer;
 
 public final class ConfigInterpolator {
 
-  private static final ObjectMapper mapper = ObjectMapperProvider.getJsonInstance();
+  private static final ObjectMapper mapper = ObjectMappers.getJsonInstance();
 
   private ConfigInterpolator() {
   }
 
-  public static Map<String, Object> of(Map<String, Object> source, Map<String, String> variables) {
+  public static Map<String, Object> of(Map<String, Object> source, Placeholder placeholder,
+      Map<String, String> variables) {
     JsonNode root = mapper.convertValue(source, JsonNode.class);
-    interpolateTextNodes(root, variables);
+    interpolateTextNodes(root, placeholder, variables);
     return mapper.convertValue(root, new TypeReference<>() {
     });
   }
 
-  private static void interpolateTextNodes(JsonNode node, Map<String, String> variables) {
+  private static void interpolateTextNodes(JsonNode node, Placeholder placeholder,
+      Map<String, String> variables) {
     if (node.isObject()) {
       ObjectNode objectNode = (ObjectNode) node;
-      interpolateTextNodesForObjects(objectNode, variables);
+      interpolateTextNodesForObjects(objectNode, placeholder, variables);
     } else if (node.isArray()) {
       ArrayNode array = (ArrayNode) node;
-      interpolateTextNodesForArrays(array, variables);
+      interpolateTextNodesForArrays(array, placeholder, variables);
     }
   }
 
-  private static void interpolateTextNodesForObjects(ObjectNode objectNode,
+  private static void interpolateTextNodesForObjects(ObjectNode objectNode, Placeholder placeholder,
       Map<String, String> variables) {
     Set<Map.Entry<String, JsonNode>> properties = objectNode.properties();
     for (Map.Entry<String, JsonNode> entry : properties) {
       applyInterpolatedValue(
           interpolated -> objectNode.set(entry.getKey(), safeTextNode(interpolated)),
-          entry.getValue(), variables);
+          entry.getValue(), placeholder, variables);
     }
   }
 
-  private static void interpolateTextNodesForArrays(ArrayNode array,
+  private static void interpolateTextNodesForArrays(ArrayNode array, Placeholder placeholder,
       Map<String, String> variables) {
     for (int i = 0; i < array.size(); i++) {
       int index = i;
       applyInterpolatedValue(interpolated -> array.set(index, safeTextNode(interpolated)),
-          array.get(i), variables);
+          array.get(i), placeholder, variables);
     }
   }
 
   private static void applyInterpolatedValue(Consumer<String> consumer, JsonNode value,
+      Placeholder placeholder,
       Map<String, String> variables) {
     if (!value.isTextual()) {
-      interpolateTextNodes(value, variables);
+      interpolateTextNodes(value, placeholder, variables);
       return;
     }
 
     String original = value.asText();
-    String interpolated = interpolate(original, variables);
+    String interpolated = interpolate(original, placeholder, variables);
     if (!Objects.equals(interpolated, original)) {
       consumer.accept(interpolated);
     }
@@ -75,8 +76,8 @@ public final class ConfigInterpolator {
     return value == null ? NullNode.getInstance() : TextNode.valueOf(value);
   }
 
-  private static String interpolate(String input, Map<String, String> variables) {
-
-    return replace(input, variables);
+  private static String interpolate(String input, Placeholder placeholder,
+      Map<String, String> variables) {
+    return placeholder.replaceIfAllResolvable(input, variables).orElse(input);
   }
 }

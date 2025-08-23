@@ -5,7 +5,7 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.liana.config.ObjectMapperProvider;
+import io.github.liana.config.ObjectMappers;
 import io.github.liana.config.exception.ConversionException;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 
 public final class JsonPathAccessor {
 
-  private static final ObjectMapper mapper = ObjectMapperProvider.getJsonInstance();
+  private static final ObjectMapper mapper = ObjectMappers.getJsonInstance();
 
   private JsonPathAccessor() {
   }
@@ -116,7 +116,6 @@ public final class JsonPathAccessor {
         String.format("Invalid or unsupported target type: %s", targetType.getTypeName())
     );
   }
-
 
   private static String toJsonPointer(String path) {
     return "/" + path.replace(".", "/")

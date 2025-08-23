@@ -15,7 +15,6 @@ import static io.github.liana.config.ConfigDefaults.DEFAULT_PROFILE;
 import static io.github.liana.config.ConfigDefaults.PROFILE_ENV_VAR;
 import static io.github.liana.config.ConfigDefaults.PROFILE_VAR;
 import static io.github.liana.config.ConfigDefaults.PROVIDER;
-import static io.github.liana.internal.PlaceholderUtils.replaceIfAllResolvable;
 import static io.github.liana.internal.StringUtils.defaultIfBlank;
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
@@ -53,7 +52,7 @@ class ConfigResourcePreparer {
    * @param location the config resource location to resolve
    */
   public ConfigResourcePreparer(ConfigResourceLocation location) {
-    this(location, System.getenv(PROFILE_ENV_VAR));
+    this(location, PropertySources.fromEnv().get(PROFILE_ENV_VAR));
   }
 
   /**
@@ -70,8 +69,7 @@ class ConfigResourcePreparer {
 
   /**
    * Prepares a list of resolved configuration resources based on the location and profile. It
-   * determines the appropriate provider, variables, resource names, and credentials to construct
-   * the list.
+   * determines the appropriate provider, variables, and resource names to construct the list.
    *
    * @return a list of {@link ConfigResourceReference} that are ready for use
    */
@@ -80,11 +78,9 @@ class ConfigResourcePreparer {
     final boolean isDefaultProvider = provider.equalsIgnoreCase(PROVIDER);
     final ImmutableConfigMap variables = prepareVariables(isDefaultProvider);
     final List<String> resourceNames = prepareResourceNames(isDefaultProvider, variables);
-    final ImmutableConfigMap credentials = requireNonNullElse(location.getCredentials(),
-        ImmutableConfigMap.empty());
 
     return resourceNames.stream()
-        .map(resourceName -> new ConfigResourceReference(provider, resourceName, credentials))
+        .map(resourceName -> new ConfigResourceReference(provider, resourceName))
         .collect(Collectors.toUnmodifiableList());
   }
 
@@ -118,12 +114,14 @@ class ConfigResourcePreparer {
       ImmutableConfigMap variables) {
     ImmutableConfigSet providedResourceNames = requireNonNullElse(location.getResourceNames(),
         ImmutableConfigSet.empty());
+    Placeholder placeholder = requireNonNullElse(location.getPlaceholder(), Placeholders.builder()
+        .build());
     Map<String, String> variableMap = variables.toMap();
     if (isDefaultProvider && providedResourceNames.isEmpty()) {
-      return resolveDefaultResources(variableMap);
+      return resolveDefaultResources(placeholder, variableMap);
     }
 
-    return resolveCustomResources(providedResourceNames, variableMap);
+    return resolveCustomResources(providedResourceNames, placeholder, variableMap);
   }
 
   /**
@@ -132,17 +130,20 @@ class ConfigResourcePreparer {
    * <p>If the base pattern includes placeholders and all required variables are available, the
    * name is resolved accordingly; otherwise, only static names are used.
    *
+   * @param placeholder the {@link Placeholder} definition controlling prefix, suffix, and delimiter
+   *                    for variable substitution
    * @param variableMap the map of variables for placeholder resolution
    * @return a list of valid and safe resource names found in the classpath
    */
-  private List<String> resolveDefaultResources(Map<String, String> variableMap) {
+  private List<String> resolveDefaultResources(Placeholder placeholder,
+      Map<String, String> variableMap) {
     List<String> processedNames = new ArrayList<>();
 
     findConfigResource(BASE_RESOURCE_NAME)
         .filter(FilenameValidator::isSafeResourceName)
         .ifPresent(processedNames::add);
 
-    replaceIfAllResolvable(BASE_RESOURCE_NAME_PATTERN, variableMap)
+    placeholder.replaceIfAllResolvable(BASE_RESOURCE_NAME_PATTERN, variableMap)
         .flatMap(this::findConfigResource)
         .filter(FilenameValidator::isSafeResourceName)
         .ifPresent(processedNames::add);
@@ -157,13 +158,17 @@ class ConfigResourcePreparer {
    * <p>Resource names without placeholders are returned as-is.
    *
    * @param resourceNames the set of custom resource names
+   * @param placeholder   the {@link Placeholder} definition controlling prefix, suffix, and
+   *                      delimiter for variable substitution
    * @param variableMap   the map of variables for substitution
    * @return a list of valid and safe resource names
    */
   private List<String> resolveCustomResources(ImmutableConfigSet resourceNames,
+      Placeholder placeholder,
       Map<String, String> variableMap) {
+
     return resourceNames.toSet().stream()
-        .map(name -> replaceIfAllResolvable(name, variableMap))
+        .map(template -> placeholder.replaceIfAllResolvable(template, variableMap))
         .flatMap(Optional::stream)
         .filter(FilenameValidator::isSafeResourceName)
         .collect(Collectors.toUnmodifiableList());

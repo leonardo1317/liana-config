@@ -1,6 +1,6 @@
 <img src="liana-logo-transparent.png" alt="Liana Logo" width="300"/>
 
-# Liana Configuration
+# Liana Config
 
 &#x20;
 
@@ -42,7 +42,7 @@ Liana provides essential configuration capabilities designed for flexibility and
 
 - **Multi-format support**: Load and merge multiple configuration files in [supported formats](#supported-formats).
 - **Ordered overrides**: Later-loaded files override earlier ones for environment-specific layering.
-- **Custom placeholder resolution**: Replace placeholders (e.g., `${profile}` or `${profile:default}`) dynamically using variable maps.
+- **Custom placeholder resolution**: Replace placeholders (`${profile}` or `${profile:default}`) dynamically using variable maps.
 - **Deep interpolation**: Automatically interpolates placeholder variables across all textual nodes in nested structures.
 - **Variable injection**: Inject variables via fluent API or programmatically.
 - **Type-safe access**: Retrieve config as `String`, `int`, `boolean`, lists, maps, arrays, or POJOs.
@@ -81,7 +81,7 @@ dependencies {
 ### Define your configuration source:
 
 ```java
-ConfigResourceLocation location = ConfigResourceLocation.builder()
+ConfigResourceLocation location = ConfigResourceLocations.builder()
     .addResources("application.yaml", "application-${profile}.yaml")
     .addVariables("profile", "dev")
     .verboseLogging(true) // optional, default is false. Enables detailed logs of the loading process.
@@ -90,7 +90,7 @@ ConfigResourceLocation location = ConfigResourceLocation.builder()
 If you define the configuration like this:
 
 ```java
-ConfigResourceLocation location = ConfigResourceLocation.builder().build();
+ConfigResourceLocation location = ConfigResourceLocations.builder().build();
 ```
 
 Liana will apply the following **defaults**:
@@ -258,9 +258,6 @@ Liana enforces strict validation for file names to ensure security and compatibi
 | `addResources(String...)`       | Adds multiple resource files.                                                                 | `.addResources("app.yaml", "db.yaml")`               |
 | `addVariables(String...)`       | Adds substitution variables using key-value pairs.                                            | `.addVariables("profile", "dev")`                    |
 | `addVariablesFromMap(Map)`      | Adds substitution variables from a `Map<String, String>`.                                     | `.addVariablesFromMap(Map.of("profile", "prod"))`    |
-| `addCredential(String, String)` | Adds a single credential key-value pair.                                                      | `.addCredential("accessKey", "****")`                |
-| `addCredentials(String...)`     | Adds multiple credentials using key-value pairs as varargs.                                   | `.addCredentials("user", "admin", "pass", "secret")` |
-| `addCredentialsFromMap(Map)`    | Adds credentials from a `Map<String, String>`.                                                | `.addCredentialsFromMap(Map.of("token", "abc"))`     |
 | `verboseLogging(boolean)`       | Enables or disables verbose logging for detailed load process output.                         | `.verboseLogging(true)`                              |
 
 ---

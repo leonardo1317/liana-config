@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Supplier;
 
-final class ConsoleConfigLogger implements ConfigLogger {
+class ConsoleConfigLogger implements ConfigLogger {
 
   private static final String LOGGER_NAME = "io.github.liana.config";
   private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern(

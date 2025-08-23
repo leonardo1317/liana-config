@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'io.github.liana'
-version = '0.0.1-SNAPSHOT'
+version = '0.1.0-SNAPSHOT'
 
 java {
     toolchain {
@@ -50,7 +50,7 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.0")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.19.0")
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testImplementation("org.mockito:mockito-core:5.17.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.17.0")
 }

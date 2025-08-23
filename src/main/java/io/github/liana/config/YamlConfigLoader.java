@@ -38,10 +38,10 @@ final class YamlConfigLoader implements ConfigLoader {
   public Configuration load(ConfigResource resource) {
     validateResource(resource);
     try (InputStream input = resource.getInputStream()) {
-      return new JacksonConfiguration(ObjectMapperProvider.getYamlInstance(), input);
-    } catch (IOException ex) {
+      return new JacksonConfiguration(ObjectMappers.getYamlInstance(), input);
+    } catch (IOException e) {
       throw new ConfigLoaderException(
-          "Error loading Yaml config from " + resource.getResourceName(), ex);
+          "Error loading Yaml config from " + resource.getResourceName(), e);
     }
   }
 }

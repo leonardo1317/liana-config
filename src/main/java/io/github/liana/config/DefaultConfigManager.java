@@ -1,15 +1,15 @@
 package io.github.liana.config;
 
-import static io.github.liana.internal.MapMerger.merge;
 import static io.github.liana.internal.StringUtils.isBlank;
 import static java.util.Objects.requireNonNull;
 
+import io.github.liana.internal.MapMerger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-final class DefaultConfigManager implements ConfigManager {
+class DefaultConfigManager implements ConfigManager {
 
   private static final long NANOS_PER_MILLISECOND = 1_000_000L;
   private static final ConfigMapCache<String, Object> cache = new ConfigMapCache<>();
@@ -35,7 +35,8 @@ final class DefaultConfigManager implements ConfigManager {
     log.info(() -> String.format("Configuration load completed: loaded=%d, failed=%d (total=%d)",
         loaded, failed, total));
 
-    return merge(configs);
+    return ConfigInterpolator.of(MapMerger.merge(configs), location.getPlaceholder(),
+        location.getVariables().toMap());
   }
 
   private List<Map<String, Object>> processConfigResources(List<ConfigResourceReference> references,

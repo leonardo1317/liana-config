@@ -37,7 +37,7 @@ final class PropertiesConfigLoader implements ConfigLoader {
   public Configuration load(ConfigResource resource) {
     validateResource(resource);
     try (InputStream input = resource.getInputStream()) {
-      return new JacksonConfiguration(ObjectMapperProvider.getPropertiesInstance(), input);
+      return new JacksonConfiguration(ObjectMappers.getPropertiesInstance(), input);
     } catch (IOException e) {
       throw new ConfigLoaderException(
           "Error loading Properties config from " + resource.getResourceName(), e);

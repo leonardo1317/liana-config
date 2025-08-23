@@ -37,7 +37,7 @@ final class XmlConfigLoader implements ConfigLoader {
   public Configuration load(ConfigResource resource) {
     validateResource(resource);
     try (InputStream input = resource.getInputStream()) {
-      return new JacksonConfiguration(ObjectMapperProvider.getXmlInstance(), input);
+      return new JacksonConfiguration(ObjectMappers.getXmlInstance(), input);
     } catch (IOException e) {
       throw new ConfigLoaderException("Error loading Xml config from " + resource.getResourceName(),
           e);

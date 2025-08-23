@@ -230,8 +230,6 @@ public class LinkedConfigMap extends LinkedHashMap<String, String> {
       throw new IllegalArgumentException("Invalid key: " + key);
     }
 
-    if (isBlank(value)) {
-      throw new IllegalArgumentException("Invalid value for key '" + key + "'");
-    }
+    requireNonNull(value,"Invalid value for key '" + key + "'");
   }
 }

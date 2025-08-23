@@ -11,21 +11,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
  * Provides singleton instances of {@link ObjectMapper} and its variants (YAML, XML, Properties) to
  * ensure consistent configuration and efficient reuse across the application.
  */
-public final class ObjectMapperProvider {
+public final class ObjectMappers {
 
-  private static final ObjectMapper JSON_MAPPER;
-  private static final ObjectMapper YAML_MAPPER;
-  private static final ObjectMapper XML_MAPPER;
-  private static final ObjectMapper PROPERTIES_MAPPER;
+  private static final ObjectMapper JSON_MAPPER = configureMapper(new ObjectMapper());
+  private static final ObjectMapper YAML_MAPPER = configureMapper(
+      new ObjectMapper(new YAMLFactory()));
+  private static final ObjectMapper XML_MAPPER = configureMapper(new XmlMapper());
+  private static final ObjectMapper PROPERTIES_MAPPER = configureMapper(new JavaPropsMapper());
 
-  static {
-    JSON_MAPPER = configureMapper(new ObjectMapper());
-    YAML_MAPPER = configureMapper(new ObjectMapper(new YAMLFactory()));
-    XML_MAPPER = configureMapper(new XmlMapper());
-    PROPERTIES_MAPPER = configureMapper(new JavaPropsMapper());
-  }
-
-  private ObjectMapperProvider() {
+  private ObjectMappers() {
   }
 
   private static <T extends ObjectMapper> T configureMapper(T mapper) {

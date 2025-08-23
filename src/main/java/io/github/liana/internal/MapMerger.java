@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.github.liana.config.ObjectMapperProvider;
+import io.github.liana.config.ObjectMappers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class MapMerger {
 
-  private static final ObjectMapper mapper = ObjectMapperProvider.getJsonInstance();
+  private static final ObjectMapper mapper = ObjectMappers.getJsonInstance();
 
   private MapMerger() {
   }
