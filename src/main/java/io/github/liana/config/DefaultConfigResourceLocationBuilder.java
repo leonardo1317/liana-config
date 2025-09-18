@@ -1,7 +1,7 @@
 package io.github.liana.config;
 
 import static io.github.liana.config.ConfigDefaults.PROVIDER;
-import static io.github.liana.internal.MapUtils.toMap;
+import static io.github.liana.internal.MapUtils.of;
 import static java.util.Objects.requireNonNull;
 
 import io.github.liana.config.exception.InvalidConfigVariablesException;
@@ -114,7 +114,7 @@ class DefaultConfigResourceLocationBuilder implements ConfigResourceLocationBuil
     requireNonNull(variables, VARIABLES_MUST_NOT_BE_NULL);
 
     try {
-      return addVariablesFromMap(toMap(variables));
+      return addVariablesFromMap(of(variables));
     } catch (IllegalArgumentException ex) {
       throw new InvalidConfigVariablesException(ex.getMessage());
     }

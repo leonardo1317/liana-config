@@ -1,27 +1,45 @@
 package io.github.liana.config;
 
 import static io.github.liana.config.ConfigFileFormat.XML;
+import static java.util.Objects.requireNonNull;
 
 import io.github.liana.config.exception.ConfigLoaderException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 /**
  * Implementation of {@link ConfigLoader} for XML configuration files.
  */
-final class XmlConfigLoader implements ConfigLoader {
+final class XmlLoader implements ConfigLoader {
+
+  private final ConfigParser configParser;
+
+  /**
+   * Creates a new {@code XmlLoader} with the specified configuration parser.
+   *
+   * <p>The provided parser will be used to transform XML resources into
+   * {@link Configuration} instances.
+   *
+   * @param configParser the parser responsible for interpreting XML input streams (must not be
+   *                     null)
+   * @throws NullPointerException if {@code configParser} is {@code null}
+   */
+  public XmlLoader(ConfigParser configParser) {
+    this.configParser = requireNonNull(configParser, "configParser mapper must not be null");
+  }
 
   /**
    * Gets the configuration file format supported by this loader.
    *
    * <p>This implementation specifically returns the XML format.
    *
-   * @return The {@link ConfigFileFormat#XML} constant representing the XML format
+   * @return an immutable {@link Set} of supported file extensions
    * @see ConfigFileFormat#XML
    */
   @Override
-  public ConfigFileFormat getFileFormat() {
-    return XML;
+  public Set<String> getKeys() {
+    return XML.getExtensions();
   }
 
   /**
@@ -36,10 +54,10 @@ final class XmlConfigLoader implements ConfigLoader {
   @Override
   public Configuration load(ConfigResource resource) {
     validateResource(resource);
-    try (InputStream input = resource.getInputStream()) {
-      return new JacksonConfiguration(ObjectMappers.getXmlInstance(), input);
+    try (InputStream input = resource.inputStream()) {
+      return configParser.parse(input);
     } catch (IOException e) {
-      throw new ConfigLoaderException("Error loading Xml config from " + resource.getResourceName(),
+      throw new ConfigLoaderException("Error loading Xml config from " + resource.resourceName(),
           e);
     }
   }

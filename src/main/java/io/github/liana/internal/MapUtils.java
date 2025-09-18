@@ -2,13 +2,15 @@ package io.github.liana.internal;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Utility class for operations related to {@link Map} creation and manipulation.
+ * Utility class for creating and manipulating {@link Map} instances.
  *
- * <p>This class is not instantiable.
+ * <p>This class provides convenience methods for constructing maps in a concise and type-safe way.
+ * It is a non-instantiable utility class.
  */
 public final class MapUtils {
 
@@ -16,35 +18,44 @@ public final class MapUtils {
   }
 
   /**
-   * Converts an array of strings representing key-value pairs into a {@link Map}.
+   * Converts an array of key-value elements into an unmodifiable {@link Map}.
    *
-   * <p>The array must contain an even number of elements, where even-indexed elements are keys and
-   * odd-indexed elements are their corresponding values.
+   * <p>The array must contain an even number of elements, where elements at even indexes are
+   * treated as keys and the subsequent elements as their corresponding values.
    *
-   * <p>For example, an array {@code ["key1", "value1", "key2", "value2"]} will be converted into a
-   * map
-   * with two entries: "key1" -> "value1" and "key2" -> "value2".
+   * <p>For example:
    *
-   * @param entries an array of key-value pairs (must not be null and must have an even length)
-   * @return a {@link LinkedHashMap} containing the key-value pairs in insertion order
-   * @throws NullPointerException     if {@code entries} is null
-   * @throws IllegalArgumentException if {@code entries} has an odd length (i.e., a key without a
-   *                                  corresponding value)
+   * <pre>{@code
+   * Map<String, String> map = MapUtils.of("key1", "value1", "key2", "value2");
+   * }</pre>
+   *
+   * <p>This method is generic and can be used with any type {@code T}, but it assumes that all
+   * keys and values share the same type.
+   *
+   * @param <T>     the type of both keys and values
+   * @param entries an array containing alternating keys and values; must not be {@code null} and
+   *                must have an even length
+   * @return an unmodifiable {@link HashMap} containing the key-value pairs
+   * @throws NullPointerException     if {@code entries} is {@code null}
+   * @throws IllegalArgumentException if {@code entries} has an odd number of elements, meaning
+   *                                  there is a key without a corresponding value
    */
-  public static Map<String, String> toMap(String[] entries) {
+  @SafeVarargs
+  public static <T> Map<T, T> of(T... entries) {
     requireNonNull(entries, "entries must not be null");
+    final int numEntries = entries.length;
 
-    if (entries.length % 2 != 0) {
-      throw new IllegalArgumentException("Missing value for key: " + entries[entries.length - 1]);
+    if (numEntries % 2 != 0) {
+      throw new IllegalArgumentException("Missing value for key: " + entries[numEntries - 1]);
     }
 
-    Map<String, String> map = new LinkedHashMap<>();
-    for (int i = 0; i < entries.length; i += 2) {
-      String key = entries[i];
-      String value = entries[i + 1];
+    var map = new HashMap<T, T>(numEntries / 2);
+    for (int i = 0; i < numEntries; i += 2) {
+      T key = entries[i];
+      T value = entries[i + 1];
       map.put(key, value);
     }
 
-    return map;
+    return Collections.unmodifiableMap(map);
   }
 }

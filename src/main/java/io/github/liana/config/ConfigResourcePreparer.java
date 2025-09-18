@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Responsible for preparing a list of configuration resources based on a given
@@ -81,7 +80,7 @@ class ConfigResourcePreparer {
 
     return resourceNames.stream()
         .map(resourceName -> new ConfigResourceReference(provider, resourceName))
-        .collect(Collectors.toUnmodifiableList());
+        .toList();
   }
 
   /**
@@ -171,7 +170,7 @@ class ConfigResourcePreparer {
         .map(template -> placeholder.replaceIfAllResolvable(template, variableMap))
         .flatMap(Optional::stream)
         .filter(FilenameValidator::isSafeResourceName)
-        .collect(Collectors.toUnmodifiableList());
+        .toList();
   }
 
   /**

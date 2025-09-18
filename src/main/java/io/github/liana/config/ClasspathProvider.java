@@ -2,6 +2,8 @@ package io.github.liana.config;
 
 import io.github.liana.config.exception.ConfigProviderException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Provides configuration resources from the application's classpath.
@@ -9,7 +11,7 @@ import java.io.InputStream;
  * <p>This implementation handles resources located in the classpath, typically files stored in
  * {@code src/main/resources} or bundled in JAR files.
  */
-final class ClasspathConfigProvider implements ConfigProvider {
+final class ClasspathProvider implements ConfigProvider {
 
   /**
    * Returns the provider identifier for classpath resources.
@@ -17,8 +19,8 @@ final class ClasspathConfigProvider implements ConfigProvider {
    * @return The constant string "classpath" identifying this provider type.
    */
   @Override
-  public String getProvider() {
-    return "classpath";
+  public Set<String> getKeys() {
+    return Collections.singleton("classpath");
   }
 
   /**
@@ -34,10 +36,10 @@ final class ClasspathConfigProvider implements ConfigProvider {
   @Override
   public ConfigResource resolveResource(ConfigResourceReference resource) {
     validateResource(resource);
-    InputStream input = ClasspathResource.getResourceAsStream(resource.getResourceName());
+    InputStream input = ClasspathResource.getResourceAsStream(resource.resourceName());
     if (input == null) {
-      throw new ConfigProviderException("Config resource not found: " + resource.getResourceName());
+      throw new ConfigProviderException("Config resource not found " + resource.resourceName());
     }
-    return new ConfigResource(resource.getResourceName(), input);
+    return new ConfigResource(resource.resourceName(), input);
   }
 }

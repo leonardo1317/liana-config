@@ -104,7 +104,7 @@ class DefaultPlaceholderTest {
     IllegalStateException ex = assertThrows(IllegalStateException.class,
         () -> resolver.replaceIfAllResolvable(TEMPLATE));
 
-    assertTrue(ex.getMessage().contains("Circular reference detected for key"));
+    assertTrue(ex.getMessage().contains("circular reference detected for key"));
   }
 
   @Test
@@ -114,6 +114,52 @@ class DefaultPlaceholderTest {
     Optional<String> result = resolver.replaceIfAllResolvable(TEMPLATE);
 
     assertEquals(Optional.of("application-"), result);
+  }
+
+  @Test
+  @DisplayName("should return only base sources when extraSources is null")
+  void shouldReturnOnlyBaseSourcesWhenExtraSourcesIsNull() {
+    final var TEMPLATE = "application-${profile}";
+    Optional<String> result = resolver.replaceIfAllResolvable(TEMPLATE, (PropertySource[]) null);
+
+    assertEquals(Optional.empty(), result);
+  }
+
+  @Test
+  @DisplayName("should return only base sources when extraSources is empty")
+  void shouldReturnOnlyBaseSourcesWhenExtraSourcesIsEmpty() {
+    final var TEMPLATE = "application-${profile}";
+    Optional<String> result = resolver.replaceIfAllResolvable(TEMPLATE);
+
+    assertEquals(Optional.empty(), result);
+  }
+
+  @Test
+  @DisplayName("should return base + one extra when single extraSource is provided")
+  void shouldReturnBasePlusOneExtraWhenSingleExtraSourceProvided() {
+    final var TEMPLATE = "application-${profile}";
+    PropertySource profile = name -> "dev";
+
+    Optional<String> result = resolver.replaceIfAllResolvable(
+        TEMPLATE, profile
+    );
+
+    assertEquals(Optional.of("application-dev"), result);
+  }
+
+  @Test
+  @DisplayName("should return base + extras when multiple extraSources are provided")
+  void shouldReturnBasePlusExtrasWhenMultipleExtraSourcesProvided() {
+    final var TEMPLATE = "application-${profile}-${region}";
+
+    PropertySource profile = key -> "profile".equals(key) ? "dev" : null;
+    PropertySource region = key -> "region".equals(key) ? "us-east-1" : null;
+
+    Optional<String> result = resolver.replaceIfAllResolvable(
+        TEMPLATE, profile, region
+    );
+
+    assertEquals(Optional.of("application-dev-us-east-1"), result);
   }
 
   @Test

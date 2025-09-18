@@ -3,10 +3,14 @@ package io.github.liana.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.github.liana.config.exception.ConfigLoaderException;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,31 +21,44 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class YamlConfigLoaderTest {
+class JsonLoaderTest {
 
   @Mock
   private ConfigResource resource;
+
+  @Mock
+  private ConfigParser configParser;
+
   private ConfigLoader loader;
 
   @BeforeEach
   void setUp() {
-    loader = new YamlConfigLoader();
+    loader = new JsonLoader(configParser);
   }
 
   @Test
-  @DisplayName("should return YAML as supported file format")
-  void shouldReturnYamlAsSupportedFileFormat() {
-    assertEquals(ConfigFileFormat.YAML, loader.getFileFormat());
+  @DisplayName("should throw NullPointerException when ConfigParser is null")
+  void shouldThrowExceptionWhenConfigParserIsNull() {
+    assertThrows(NullPointerException.class, () -> new YamlLoader(null));
   }
 
   @Test
-  @DisplayName("should load valid YAML configuration successfully")
-  void shouldLoadValidYamlConfigurationSuccessfully() {
-    String content = "key: value";
+  @DisplayName("should return JSON as supported file format")
+  void shouldReturnJsonAsSupportedFileFormat() {
+    assertEquals(ConfigFileFormat.JSON.getExtensions(), loader.getKeys());
+  }
+
+  @Test
+  @DisplayName("should load valid JSON configuration successfully")
+  void shouldLoadValidJsonConfigurationSuccessfully() throws IOException {
+    String content = "{\"key\": \"value\"}";
     InputStream input = new ByteArrayInputStream(content.getBytes());
+    Configuration configuration = mock(Configuration.class);
 
-    when(resource.getInputStream()).thenReturn(input);
-    when(resource.getResourceName()).thenReturn("test.yaml");
+    when(resource.inputStream()).thenReturn(input);
+    when(resource.resourceName()).thenReturn("test.json");
+    when(configuration.get(anyString(), any())).thenReturn(Optional.of("value"));
+    when(configParser.parse(input)).thenReturn(configuration);
 
     Configuration config = loader.load(resource);
 
@@ -58,7 +75,7 @@ class YamlConfigLoaderTest {
   @Test
   @DisplayName("should throw NullPointerException when input stream is null")
   void shouldThrowNullPointerExceptionWhenInputStreamIsNull() {
-    when(resource.getInputStream()).thenReturn(null);
+    when(resource.inputStream()).thenReturn(null);
 
     assertThrows(NullPointerException.class, () -> loader.load(resource));
   }
@@ -66,23 +83,24 @@ class YamlConfigLoaderTest {
   @Test
   @DisplayName("should throw NullPointerException when resource name is null")
   void shouldThrowNullPointerExceptionWhenResourceNameIsNull() {
-    String content = "key: value";
+    String content = "{\"key\": \"value\"}";
     InputStream input = new ByteArrayInputStream(content.getBytes());
 
-    when(resource.getInputStream()).thenReturn(input);
-    when(resource.getResourceName()).thenReturn(null);
+    when(resource.inputStream()).thenReturn(input);
+    when(resource.resourceName()).thenReturn(null);
 
     assertThrows(NullPointerException.class, () -> loader.load(resource));
   }
 
   @Test
-  @DisplayName("should throw ConfigLoaderException when YAML is malformed")
-  void shouldThrowConfigLoaderExceptionWhenYamlIsMalformed() {
-    String content = "key: : value";
+  @DisplayName("should throw ConfigLoaderException when JSON is malformed")
+  void shouldThrowConfigLoaderExceptionWhenJsonIsMalformed() throws IOException {
+    String content = "{\"key\": \"value\"";
     InputStream input = new ByteArrayInputStream(content.getBytes());
 
-    when(resource.getInputStream()).thenReturn(input);
-    when(resource.getResourceName()).thenReturn("malformed.yaml");
+    when(resource.inputStream()).thenReturn(input);
+    when(resource.resourceName()).thenReturn("malformed.json");
+    when(configParser.parse(input)).thenThrow(new IOException("Malformed JSON"));
 
     assertThrows(ConfigLoaderException.class, () -> loader.load(resource));
   }

@@ -1,15 +1,33 @@
 package io.github.liana.config;
 
 import static io.github.liana.config.ConfigFileFormat.YAML;
+import static java.util.Objects.requireNonNull;
 
 import io.github.liana.config.exception.ConfigLoaderException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 /**
  * Implementation of {@link ConfigLoader} for YAML configuration files.
  */
-final class YamlConfigLoader implements ConfigLoader {
+final class YamlLoader implements ConfigLoader {
+
+  private final ConfigParser configParser;
+
+  /**
+   * Creates a new {@code YamlLoader} with the specified configuration parser.
+   *
+   * <p>The provided parser will be used to transform YAML resources into
+   * {@link Configuration} instances.
+   *
+   * @param configParser the parser responsible for interpreting YAML input streams (must not be
+   *                     null)
+   * @throws NullPointerException if {@code configParser} is {@code null}
+   */
+  public YamlLoader(ConfigParser configParser) {
+    this.configParser = requireNonNull(configParser, "configParser mapper must not be null");
+  }
 
   /**
    * Gets the configuration file format supported by this loader.
@@ -17,12 +35,12 @@ final class YamlConfigLoader implements ConfigLoader {
    * <p>This implementation specifically returns the YAML format, which supports both ".yaml" and
    * ".yml" file extensions.
    *
-   * @return The {@link ConfigFileFormat#YAML} constant representing the YAML format
+   * @return an immutable {@link Set} of supported file extensions
    * @see ConfigFileFormat#YAML
    */
   @Override
-  public ConfigFileFormat getFileFormat() {
-    return YAML;
+  public Set<String> getKeys() {
+    return YAML.getExtensions();
   }
 
   /**
@@ -37,11 +55,11 @@ final class YamlConfigLoader implements ConfigLoader {
   @Override
   public Configuration load(ConfigResource resource) {
     validateResource(resource);
-    try (InputStream input = resource.getInputStream()) {
-      return new JacksonConfiguration(ObjectMappers.getYamlInstance(), input);
+    try (InputStream input = resource.inputStream()) {
+      return configParser.parse(input);
     } catch (IOException e) {
       throw new ConfigLoaderException(
-          "Error loading Yaml config from " + resource.getResourceName(), e);
+          "Error loading Yaml config from " + resource.resourceName(), e);
     }
   }
 }

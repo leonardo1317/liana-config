@@ -1,4 +1,4 @@
-<img src="liana-logo-transparent.png" alt="Liana Logo" width="300"/>
+![Liana](banner-github-clean.png)
 
 # Liana Config
 
@@ -36,7 +36,7 @@ Liana prioritizes:
 
 ---
 
-## Important Characteristics
+## Key Features
 
 Liana provides essential configuration capabilities designed for flexibility and simplicity in Java applications:
 
@@ -93,7 +93,7 @@ If you define the configuration like this:
 ConfigResourceLocation location = ConfigResourceLocations.builder().build();
 ```
 
-Liana will apply the following **defaults**:
+Liana applies the following **defaults**:
 
 - Provider: **classpath**
 - Profile variable: **profile**

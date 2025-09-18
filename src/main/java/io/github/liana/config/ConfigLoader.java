@@ -3,17 +3,19 @@ package io.github.liana.config;
 import static java.util.Objects.requireNonNull;
 
 import io.github.liana.config.exception.ConfigLoaderException;
+import java.util.Set;
 
 /**
  * Loads configuration files from various sources and formats. Implementations handle specific file
- * formats (PROPERTIES, YAML, JSON, etc.).
+ * formats (PROPERTIES, YAML, JSON, XML, etc.).
  */
-interface ConfigLoader {
+interface ConfigLoader extends Strategy<String>  {
 
   /**
-   * Supported configuration format for this loader.
+   * Supported configuration extensions for this loader.
    */
-  ConfigFileFormat getFileFormat();
+  @Override
+  Set<String> getKeys();
 
   /**
    * Loads and parses configuration from the given resource.
@@ -29,7 +31,7 @@ interface ConfigLoader {
    */
   default void validateResource(ConfigResource resource) {
     requireNonNull(resource, "ConfigResource must not be null");
-    requireNonNull(resource.getInputStream(), "InputStream must not be null");
-    requireNonNull(resource.getResourceName(), "ResourceNames must not be null");
+    requireNonNull(resource.inputStream(), "inputStream must not be null");
+    requireNonNull(resource.resourceName(), "resourceName must not be null");
   }
 }

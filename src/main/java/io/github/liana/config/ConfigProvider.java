@@ -3,17 +3,19 @@ package io.github.liana.config;
 import static java.util.Objects.requireNonNull;
 
 import io.github.liana.config.exception.ConfigProviderException;
+import java.util.Set;
 
 /**
  * Provides configuration resources from different sources. Implementations handle specific
  * locations like filesystem, classpath or remote URLs.
  */
-public interface ConfigProvider {
+public interface ConfigProvider extends Strategy<String> {
 
   /**
    * Unique identifier for this provider (e.g., "filesystem", "classpath").
    */
-  String getProvider();
+  @Override
+  Set<String> getKeys();
 
   /**
    * Resolves a configuration resource into a loadable format.
@@ -28,6 +30,6 @@ public interface ConfigProvider {
    */
   default void validateResource(ConfigResourceReference resource) {
     requireNonNull(resource, "ConfigResourceReference must not be null");
-    requireNonNull(resource.getResourceName(), "ResourceNames must not be null");
+    requireNonNull(resource.resourceName(), "ResourceNames must not be null");
   }
 }

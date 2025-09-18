@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNullElse;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Utility class for creating {@link PropertySource} instances from various sources.

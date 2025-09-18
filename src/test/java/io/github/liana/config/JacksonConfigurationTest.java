@@ -18,6 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,13 +33,15 @@ class JacksonConfigurationTest {
     InputStream input = new ByteArrayInputStream("{}".getBytes());
 
     Map<String, Object> dummyMap = Map.of("key", "value");
-    when(mapper.readValue(any(InputStream.class), any(TypeReference.class))).thenReturn(dummyMap);
+    when(mapper.readValue(any(InputStream.class),
+        Mockito.<TypeReference<Map<String, Object>>>any())).thenReturn(dummyMap);
 
     JacksonConfiguration config = new JacksonConfiguration(mapper, input);
 
     assertNotNull(config);
     assertEquals(Optional.of("value"), config.get("key", String.class));
-    verify(mapper).readValue(any(InputStream.class), any(TypeReference.class));
+    verify(mapper).readValue(any(InputStream.class),
+        Mockito.<TypeReference<Map<String, Object>>>any());
   }
 
   @Test
@@ -46,7 +49,8 @@ class JacksonConfigurationTest {
   void shouldThrowIOExceptionWhenMapperFails() throws Exception {
     InputStream input = new ByteArrayInputStream("invalid".getBytes());
 
-    when(mapper.readValue(any(InputStream.class), any(TypeReference.class)))
+    when(
+        mapper.readValue(any(InputStream.class), Mockito.<TypeReference<Map<String, Object>>>any()))
         .thenThrow(new IOException("fail"));
 
     assertThrows(IOException.class, () -> new JacksonConfiguration(mapper, input));

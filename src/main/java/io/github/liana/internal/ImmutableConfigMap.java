@@ -10,9 +10,8 @@ import java.util.Objects;
  * An immutable key-value configuration map that enforces read-only access.
  *
  * <p>This class wraps a {@link Map} and ensures that its content cannot be modified after
- * creation.
- * Keys and values are strings, and access is restricted through a controlled API that validates
- * non-null keys.
+ * creation. Keys and values are strings, and access is restricted through a controlled API that
+ * validates non-null keys.
  *
  * <p>It is commonly used to expose configuration data safely.
  *
@@ -92,10 +91,11 @@ public class ImmutableConfigMap {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof ImmutableConfigMap)) {
+
+    if (!(o instanceof ImmutableConfigMap that)) {
       return false;
     }
-    ImmutableConfigMap that = (ImmutableConfigMap) o;
+
     return Objects.equals(map, that.map);
   }
 

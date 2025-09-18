@@ -1,30 +1,13 @@
 package io.github.liana.config;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.InputStream;
 
-public class ConfigResource {
+public record ConfigResource(String resourceName, InputStream inputStream) {
 
-  private final String resourceName;
-  private final InputStream inputStream;
-
-  public ConfigResource(String resourceName, InputStream inputStream) {
-    this.resourceName = resourceName;
-    this.inputStream = inputStream;
-  }
-
-  public String getResourceName() {
-    return resourceName;
-  }
-
-  public InputStream getInputStream() {
-    return inputStream;
-  }
-
-  @Override
-  public String toString() {
-    return "ConfigResource{"
-        + "resourceName='" + resourceName + '\''
-        + ", inputStream=" + inputStream
-        + '}';
+  public ConfigResource {
+    requireNonNull(resourceName, "resourceName must not be null");
+    requireNonNull(inputStream, "inputStream must not be null");
   }
 }

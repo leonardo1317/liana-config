@@ -4,7 +4,6 @@ import static io.github.liana.internal.StringUtils.isBlank;
 import static io.github.liana.internal.StringUtils.requireNonBlank;
 import static java.util.Objects.requireNonNull;
 
-import io.github.liana.internal.ListUtils;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -12,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * Provides methods to resolve placeholders within strings using environment variables or a provided
@@ -27,7 +27,7 @@ import java.util.Set;
  * <p>This class is immutable and supports configurable prefix, suffix, delimiter, and escape
  * characters.
  */
-class DefaultPlaceholder implements Placeholder {
+final class DefaultPlaceholder implements Placeholder {
 
   private final List<PropertySource> sources;
   private final String prefix;
@@ -62,7 +62,7 @@ class DefaultPlaceholder implements Placeholder {
     this.suffix = requireNonBlank(suffix, "suffix must not be null or blank");
     this.delimiter = requireNonBlank(delimiter, "delimiter must not be null or blank");
     this.escapeChar = escapeChar;
-    this.sources = ListUtils.immutableCopyOf(sources, "sources must not be null");
+    this.sources = List.copyOf(requireNonNull(sources, "sources must not be null"));
   }
 
   /**
@@ -78,19 +78,14 @@ class DefaultPlaceholder implements Placeholder {
    * @throws NullPointerException if {@code template} is null
    */
   @Override
-  public Optional<String> replaceIfAllResolvable(String template,
-      PropertySource... extraSources) {
+  public Optional<String> replaceIfAllResolvable(String template, PropertySource... extraSources) {
     requireNonNull(template, "template must not be null");
-
-    List<PropertySource> mergedSources = new ArrayList<>(this.sources);
-    if (extraSources != null && extraSources.length > 0) {
-      mergedSources.addAll(List.of(extraSources));
-    }
 
     if (isBlank(template) || !template.contains(prefix)) {
       return Optional.of(template);
     }
 
+    List<PropertySource> mergedSources = mergeSources(extraSources);
     if (mergedSources.isEmpty()) {
       return Optional.empty();
     }
@@ -98,6 +93,25 @@ class DefaultPlaceholder implements Placeholder {
     var unresolved = new HashSet<String>();
     String resolved = replace(template, mergedSources, new HashSet<>(), unresolved);
     return unresolved.isEmpty() ? Optional.of(resolved) : Optional.empty();
+  }
+
+  /**
+   * Merges the default property sources with the provided extra sources.
+   *
+   * <p>The returned list will contain all the sources from {@code this.sources}
+   * followed by the ones given in {@code extraSources}, if any. If {@code extraSources} is
+   * {@code null} or empty, only the default sources will be included.
+   *
+   * @param extraSources additional property sources to merge with the defaults; may be {@code null}
+   *                     or empty
+   * @return a new list containing the merged property sources, never {@code null}
+   */
+  private List<PropertySource> mergeSources(PropertySource... extraSources) {
+    List<PropertySource> merged = new ArrayList<>(this.sources);
+    if (extraSources != null && extraSources.length > 0) {
+      merged.addAll(List.of(extraSources));
+    }
+    return List.copyOf(merged);
   }
 
   /**
@@ -202,16 +216,21 @@ class DefaultPlaceholder implements Placeholder {
       Set<String> keysInResolution, Set<String> unresolved) {
     var colonIndex = placeholder.indexOf(delimiter);
     var key = colonIndex >= 0 ? placeholder.substring(0, colonIndex) : placeholder;
-    var fallback =
-        colonIndex >= 0 ? placeholder.substring(colonIndex + delimiter.length()) : null;
+    Supplier<String> fallbackSupplier = getFallback(placeholder, colonIndex);
 
     if (!keysInResolution.add(key)) {
-      throw new IllegalStateException("Circular reference detected for key: " + key);
+      throw new IllegalStateException("circular reference detected for key: " + key);
     }
 
-    String resolved = resolveKey(key, fallback, sources, keysInResolution, unresolved);
+    String resolved = resolveKey(key, fallbackSupplier, sources, keysInResolution, unresolved);
     keysInResolution.remove(key);
     return resolved;
+  }
+
+  private Supplier<String> getFallback(String placeholder, int colonIndex) {
+    return colonIndex >= 0
+        ? () -> placeholder.substring(colonIndex + delimiter.length())
+        : () -> null;
   }
 
   /**
@@ -219,12 +238,13 @@ class DefaultPlaceholder implements Placeholder {
    * value if provided.
    *
    * @param key              the key to resolve
-   * @param fallback         the fallback value if the key is not found
+   * @param fallbackSupplier the fallback value if the key is not found
    * @param keysInResolution the set of keys currently being resolved
    * @param unresolved       the set of keys that could not be resolved
    * @return the resolved value, the fallback, or the original placeholder if unresolved
    */
-  private String resolveKey(String key, String fallback, List<PropertySource> sources,
+  private String resolveKey(String key, Supplier<String> fallbackSupplier,
+      List<PropertySource> sources,
       Set<String> keysInResolution,
       Set<String> unresolved) {
     String value = resolve(key, sources);
@@ -232,6 +252,7 @@ class DefaultPlaceholder implements Placeholder {
       return replace(value, sources, keysInResolution, unresolved);
     }
 
+    String fallback = fallbackSupplier.get();
     if (fallback != null) {
       return replace(fallback, sources, keysInResolution, unresolved);
     }

@@ -55,7 +55,8 @@ public class LinkedConfigMap extends LinkedHashMap<String, String> {
    * @param key   the key with which the specified value is to be associated.
    * @param value the value to be associated with the specified key.
    * @return the previous value associated with key, or {@code null} if there was no mapping.
-   * @throws IllegalArgumentException if the key or value is invalid.
+   * @throws IllegalArgumentException if the key is invalid.
+   * @throws NullPointerException     if the value is null.
    */
   @Override
   public String put(String key, String value) {
@@ -224,12 +225,13 @@ public class LinkedConfigMap extends LinkedHashMap<String, String> {
    * @param key   the key to validate.
    * @param value the value to validate.
    * @throws IllegalArgumentException if the key or value is invalid.
+   * @throws NullPointerException     if the value is null.
    */
   private void validateKeyValue(String key, String value) {
     if (isBlank(key)) {
       throw new IllegalArgumentException("Invalid key: " + key);
     }
 
-    requireNonNull(value,"Invalid value for key '" + key + "'");
+    requireNonNull(value, "Invalid value for key '" + key + "'");
   }
 }

@@ -12,8 +12,6 @@ java {
         languageVersion = JavaLanguageVersion.of(17)
     }
 
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
 }
 
 jacoco {
@@ -25,6 +23,15 @@ jacocoTestReport {
         xml.required = true
         html.required = true
         csv.required = false
+    }
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, exclude: [
+                            '**/config/exception/**'
+                    ])
+                })
+        )
     }
 }
 

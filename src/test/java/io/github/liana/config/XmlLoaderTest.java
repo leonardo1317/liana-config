@@ -3,10 +3,14 @@ package io.github.liana.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.github.liana.config.exception.ConfigLoaderException;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,31 +21,44 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class PropertiesConfigLoaderTest {
+class XmlLoaderTest {
 
   @Mock
   private ConfigResource resource;
+
+  @Mock
+  private ConfigParser configParser;
+
   private ConfigLoader loader;
 
   @BeforeEach
   void setUp() {
-    loader = new PropertiesConfigLoader();
+    loader = new XmlLoader(configParser);
   }
 
   @Test
-  @DisplayName("should return Properties as supported file format")
-  void shouldReturnPropertiesAsSupportedFileFormat() {
-    assertEquals(ConfigFileFormat.PROPERTIES, loader.getFileFormat());
+  @DisplayName("should throw NullPointerException when ConfigParser is null")
+  void shouldThrowExceptionWhenConfigParserIsNull() {
+    assertThrows(NullPointerException.class, () -> new YamlLoader(null));
   }
 
   @Test
-  @DisplayName("should load valid Properties configuration successfully")
-  void shouldLoadValidPropertiesConfigurationSuccessfully() {
-    String content = "key=value";
+  @DisplayName("should return XML as supported file format")
+  void shouldReturnXmlAsSupportedFileFormat() {
+    assertEquals(ConfigFileFormat.XML.getExtensions(), loader.getKeys());
+  }
+
+  @Test
+  @DisplayName("should load valid XML configuration successfully")
+  void shouldLoadValidXmlConfigurationSuccessfully() throws IOException {
+    String content = "<root><key>value</key></root>";
     InputStream input = new ByteArrayInputStream(content.getBytes());
+    Configuration configuration = mock(Configuration.class);
 
-    when(resource.getInputStream()).thenReturn(input);
-    when(resource.getResourceName()).thenReturn("test.properties");
+    when(resource.inputStream()).thenReturn(input);
+    when(resource.resourceName()).thenReturn("test.xml");
+    when(configuration.get(anyString(), any())).thenReturn(Optional.of("value"));
+    when(configParser.parse(input)).thenReturn(configuration);
 
     Configuration config = loader.load(resource);
 
@@ -58,7 +75,7 @@ class PropertiesConfigLoaderTest {
   @Test
   @DisplayName("should throw NullPointerException when input stream is null")
   void shouldThrowNullPointerExceptionWhenInputStreamIsNull() {
-    when(resource.getInputStream()).thenReturn(null);
+    when(resource.inputStream()).thenReturn(null);
 
     assertThrows(NullPointerException.class, () -> loader.load(resource));
   }
@@ -66,23 +83,24 @@ class PropertiesConfigLoaderTest {
   @Test
   @DisplayName("should throw NullPointerException when resource name is null")
   void shouldThrowNullPointerExceptionWhenResourceNameIsNull() {
-    String content = "key=value";
+    String content = "<root><key>value</key></root>";
     InputStream input = new ByteArrayInputStream(content.getBytes());
 
-    when(resource.getInputStream()).thenReturn(input);
-    when(resource.getResourceName()).thenReturn(null);
+    when(resource.inputStream()).thenReturn(input);
+    when(resource.resourceName()).thenReturn(null);
 
     assertThrows(NullPointerException.class, () -> loader.load(resource));
   }
 
   @Test
-  @DisplayName("should throw ConfigLoaderException when Properties is malformed")
-  void shouldThrowConfigLoaderExceptionWhenPropertiesIsMalformed() {
-    String content = "key\\u12=value";
+  @DisplayName("should throw ConfigLoaderException when XML is malformed")
+  void shouldThrowConfigLoaderExceptionWhenXmlIsMalformed() throws IOException {
+    String content = "<root><key>value<key></root>";
     InputStream input = new ByteArrayInputStream(content.getBytes());
 
-    when(resource.getInputStream()).thenReturn(input);
-    when(resource.getResourceName()).thenReturn("malformed.properties");
+    when(resource.inputStream()).thenReturn(input);
+    when(resource.resourceName()).thenReturn("malformed.xml");
+    when(configParser.parse(input)).thenThrow(new IOException("Malformed XML"));
 
     assertThrows(ConfigLoaderException.class, () -> loader.load(resource));
   }

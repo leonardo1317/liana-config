@@ -1,27 +1,45 @@
 package io.github.liana.config;
 
 import static io.github.liana.config.ConfigFileFormat.JSON;
+import static java.util.Objects.requireNonNull;
 
 import io.github.liana.config.exception.ConfigLoaderException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 /**
  * Implementation of {@link ConfigLoader} for JSON configuration files.
  */
-final class JsonConfigLoader implements ConfigLoader {
+final class JsonLoader implements ConfigLoader {
+
+  private final ConfigParser configParser;
+
+  /**
+   * Creates a new {@code JsonLoader} with the specified configuration parser.
+   *
+   * <p>The provided parser will be used to transform JSON resources into
+   * {@link Configuration} instances.
+   *
+   * @param configParser the parser responsible for interpreting JSON input streams (must not be
+   *                     null)
+   * @throws NullPointerException if {@code configParser} is {@code null}
+   */
+  public JsonLoader(ConfigParser configParser) {
+    this.configParser = requireNonNull(configParser, "configParser mapper must not be null");
+  }
 
   /**
    * Gets the configuration file format supported by this loader.
    *
    * <p>This implementation specifically returns the JSON format.
    *
-   * @return The {@link ConfigFileFormat#JSON} constant representing the JSON format
+   * @return an immutable {@link Set} of supported file extensions
    * @see ConfigFileFormat#JSON
    */
   @Override
-  public ConfigFileFormat getFileFormat() {
-    return JSON;
+  public Set<String> getKeys() {
+    return JSON.getExtensions();
   }
 
   /**
@@ -36,11 +54,11 @@ final class JsonConfigLoader implements ConfigLoader {
   @Override
   public Configuration load(ConfigResource resource) {
     validateResource(resource);
-    try (InputStream input = resource.getInputStream()) {
-      return new JacksonConfiguration(ObjectMappers.getJsonInstance(), input);
+    try (InputStream input = resource.inputStream()) {
+      return configParser.parse(input);
     } catch (IOException e) {
       throw new ConfigLoaderException(
-          "Error loading Json config from " + resource.getResourceName(), e);
+          "Error loading Json config from " + resource.resourceName(), e);
     }
   }
 }

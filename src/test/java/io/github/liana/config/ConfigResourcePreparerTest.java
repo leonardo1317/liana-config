@@ -58,7 +58,7 @@ class ConfigResourcePreparerTest {
       List<ConfigResourceReference> result = preparer.prepare();
 
       assertTrue(
-          result.stream().anyMatch(resource -> resource.getResourceName().contains(PROFILE))
+          result.stream().anyMatch(resource -> resource.resourceName().contains(PROFILE))
       );
     }
 
@@ -71,7 +71,7 @@ class ConfigResourcePreparerTest {
       List<ConfigResourceReference> result = preparer.prepare();
 
       assertTrue(
-          result.stream().anyMatch(resource -> resource.getResourceName().contains(PROFILE))
+          result.stream().anyMatch(resource -> resource.resourceName().contains(PROFILE))
       );
     }
 
@@ -84,10 +84,9 @@ class ConfigResourcePreparerTest {
       List<ConfigResourceReference> result = preparer.prepare();
 
       assertTrue(
-          result.stream().anyMatch(resource -> resource.getResourceName().contains(PROFILE))
+          result.stream().anyMatch(resource -> resource.resourceName().contains(PROFILE))
       );
     }
-
   }
 
   @Nested
@@ -104,7 +103,7 @@ class ConfigResourcePreparerTest {
       List<ConfigResourceReference> result = preparer.prepare();
 
       assertTrue(
-          result.stream().anyMatch(resource -> DEFAULT_PROVIDER.equals(resource.getProvider()))
+          result.stream().anyMatch(resource -> DEFAULT_PROVIDER.equals(resource.provider()))
       );
     }
 
@@ -118,7 +117,7 @@ class ConfigResourcePreparerTest {
       List<ConfigResourceReference> result = preparer.prepare();
 
       assertTrue(
-          result.stream().anyMatch(resource -> DEFAULT_PROVIDER.equals(resource.getProvider()))
+          result.stream().anyMatch(resource -> DEFAULT_PROVIDER.equals(resource.provider()))
       );
     }
 
@@ -134,7 +133,7 @@ class ConfigResourcePreparerTest {
       List<ConfigResourceReference> result = preparer.prepare();
 
       assertTrue(
-          result.stream().anyMatch(resource -> provider.equals(resource.getProvider()))
+          result.stream().anyMatch(resource -> provider.equals(resource.provider()))
       );
     }
   }
@@ -151,7 +150,7 @@ class ConfigResourcePreparerTest {
       final String PROFILE = "default";
       final String RESOURCE_NAME = "application" + "." + EXTENSION;
       final String RESOURCE_NAME_PATTERN = "application-" + PROFILE + "." + EXTENSION;
-      Set<String> resourceNames = new HashSet<>();
+      var resourceNames = new HashSet<String>();
       resourceNames.add(resourceName);
       when(configResourceLocation.getResourceNames()).thenReturn(
           ImmutableConfigSet.of(resourceNames));
@@ -170,12 +169,12 @@ class ConfigResourcePreparerTest {
         List<ConfigResourceReference> result = preparer.prepare();
 
         assertTrue(
-            result.stream().anyMatch(resource -> RESOURCE_NAME.equals(resource.getResourceName()))
+            result.stream().anyMatch(resource -> RESOURCE_NAME.equals(resource.resourceName()))
         );
 
         assertTrue(
             result.stream()
-                .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.getResourceName()))
+                .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.resourceName()))
         );
       }
     }
@@ -189,7 +188,7 @@ class ConfigResourcePreparerTest {
       final String RESOURCE_NAME = "application" + "." + EXTENSION;
       final String RESOURCE_NAME_PATTERN = "application-" + PROFILE + "." + EXTENSION;
 
-      Set<String> resourceNames = new HashSet<>();
+      var resourceNames = new HashSet<String>();
       resourceNames.add(resourceName);
       when(configResourceLocation.getResourceNames()).thenReturn(
           ImmutableConfigSet.of(resourceNames));
@@ -209,12 +208,12 @@ class ConfigResourcePreparerTest {
         List<ConfigResourceReference> result = preparer.prepare();
 
         assertTrue(
-            result.stream().anyMatch(resource -> RESOURCE_NAME.equals(resource.getResourceName()))
+            result.stream().anyMatch(resource -> RESOURCE_NAME.equals(resource.resourceName()))
         );
 
         assertTrue(
             result.stream()
-                .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.getResourceName()))
+                .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.resourceName()))
         );
       }
     }
@@ -223,7 +222,7 @@ class ConfigResourcePreparerTest {
     @NullAndEmptySource
     @DisplayName("should return an empty list when default resource name resolution fails")
     void shouldReturnAnEmptyListWhenDefaultResourceNameResolutionFails(String resourceName) {
-      Set<String> resourceNames = new HashSet<>();
+      var resourceNames = new HashSet<String>();
       resourceNames.add(resourceName);
       when(configResourceLocation.getResourceNames()).thenReturn(
           ImmutableConfigSet.of(resourceNames));
@@ -253,7 +252,7 @@ class ConfigResourcePreparerTest {
       final String RESOURCE_NAME = "application" + "." + EXTENSION;
       final String RESOURCE_NAME_PATTERN = "application-" + PROFILE + "." + EXTENSION;
 
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add("application.properties");
       resourceNames.add("application-${profile}.properties");
 
@@ -271,12 +270,12 @@ class ConfigResourcePreparerTest {
         List<ConfigResourceReference> result = preparer.prepare();
 
         assertTrue(
-            result.stream().anyMatch(resource -> RESOURCE_NAME.equals(resource.getResourceName()))
+            result.stream().anyMatch(resource -> RESOURCE_NAME.equals(resource.resourceName()))
         );
 
         assertTrue(
             result.stream()
-                .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.getResourceName()))
+                .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.resourceName()))
         );
       }
     }
@@ -285,7 +284,7 @@ class ConfigResourcePreparerTest {
     @Test
     void shouldOnlyIncludeValidResourceNames() {
       final String VALID_RESOURCE_NAME = "application.properties";
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add(VALID_RESOURCE_NAME);
       resourceNames.add("../invalid.json");
 
@@ -306,7 +305,7 @@ class ConfigResourcePreparerTest {
         assertEquals(1, result.size());
         assertTrue(
             result.stream()
-                .anyMatch(resource -> VALID_RESOURCE_NAME.equals(resource.getResourceName()))
+                .anyMatch(resource -> VALID_RESOURCE_NAME.equals(resource.resourceName()))
         );
       }
     }
@@ -314,7 +313,7 @@ class ConfigResourcePreparerTest {
     @Test
     @DisplayName("should return an empty list when resource names are invalid and default provider is used")
     void shouldReturnAnEmptyListWhenResourceNamesAreInvalidAndDefaultProviderIsUsed() {
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add("/application/${profile}.properties");
       resourceNames.add("../config../.json");
 
@@ -338,7 +337,7 @@ class ConfigResourcePreparerTest {
     @Test
     @DisplayName("should return an empty list when resource names are invalid and non-default provider is used")
     void shouldReturnAnEmptyListWhenResourceNamesAreInvalidAndNonDefaultProviderIsUsed() {
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add("/application/${profile}.properties");
       resourceNames.add("../config../.json");
 
@@ -365,7 +364,7 @@ class ConfigResourcePreparerTest {
     @DisplayName("should return an empty list when resource names are null or empty with a non-default provider")
     void shouldReturnAnEmptyListWhenResourceNamesAreNullOrEmptyWithANonDefaultProvider(
         String resourceName) {
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add(resourceName);
 
       when(configResourceLocation.getProvider()).thenReturn("git");
@@ -390,7 +389,7 @@ class ConfigResourcePreparerTest {
     @DisplayName("should return an empty list when resource names are blank with a non-default provider")
     void shouldReturnAnEmptyListWhenResourceNamesAreBlankWithANonDefaultProvider(
         String resourceName) {
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add(resourceName);
 
       when(configResourceLocation.getProvider()).thenReturn("git");
@@ -421,7 +420,7 @@ class ConfigResourcePreparerTest {
       final String EXTENSION = "properties";
       final String PROFILE = "default";
       final String RESOURCE_NAME_PATTERN = "application-" + PROFILE + "." + EXTENSION;
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add("application-${profile}.properties");
 
       when(configResourceLocation.getResourceNames()).thenReturn(
@@ -433,7 +432,7 @@ class ConfigResourcePreparerTest {
 
       assertTrue(
           result.stream()
-              .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.getResourceName()))
+              .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.resourceName()))
       );
     }
 
@@ -443,7 +442,7 @@ class ConfigResourcePreparerTest {
       final String EXTENSION = "properties";
       final String PROFILE = "default";
       final String RESOURCE_NAME_PATTERN = "application-" + PROFILE + "." + EXTENSION;
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add("application-${profile}.properties");
 
       when(configResourceLocation.getResourceNames()).thenReturn(
@@ -455,7 +454,7 @@ class ConfigResourcePreparerTest {
 
       assertTrue(
           result.stream()
-              .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.getResourceName()))
+              .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.resourceName()))
       );
     }
 
@@ -465,7 +464,7 @@ class ConfigResourcePreparerTest {
       final String EXTENSION = "properties";
       final String PROFILE = "dev";
       final String RESOURCE_NAME = "application-" + PROFILE + "." + EXTENSION;
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add("application-${profile}.properties");
 
       when(configResourceLocation.getProvider()).thenReturn("git");
@@ -478,14 +477,14 @@ class ConfigResourcePreparerTest {
       List<ConfigResourceReference> result = preparer.prepare();
 
       assertTrue(
-          result.stream().anyMatch(resource -> RESOURCE_NAME.equals(resource.getResourceName()))
+          result.stream().anyMatch(resource -> RESOURCE_NAME.equals(resource.resourceName()))
       );
     }
 
     @Test
     @DisplayName("should return empty resource name when profile variable is missing")
     void shouldSkipResourceWhenVariablesMissingForInterpolation() {
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add("application-${profile}.properties");
       when(configResourceLocation.getResourceNames()).thenReturn(
           ImmutableConfigSet.of(resourceNames));
@@ -504,7 +503,7 @@ class ConfigResourcePreparerTest {
       final String EXTENSION = "properties";
       final String PROFILE = "test";
       final String RESOURCE_NAME_PATTERN = "application-" + PROFILE + "." + EXTENSION;
-      Set<String> resourceNames = new LinkedHashSet<>();
+      var resourceNames = new LinkedHashSet<String>();
       resourceNames.add("application-${profile}.properties");
       when(configResourceLocation.getResourceNames()).thenReturn(
           ImmutableConfigSet.of(resourceNames));
@@ -516,7 +515,7 @@ class ConfigResourcePreparerTest {
 
       assertTrue(
           result.stream()
-              .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.getResourceName()))
+              .anyMatch(resource -> RESOURCE_NAME_PATTERN.equals(resource.resourceName()))
       );
     }
   }

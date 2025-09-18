@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import io.github.liana.internal.ImmutableConfigMap;
 import io.github.liana.internal.ImmutableConfigSet;
@@ -12,8 +11,15 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class DefaultConfigResourceLocationTest {
+
+  @Mock
+  private Placeholder placeholder;
 
   @Test
   @DisplayName("should construct with valid values and return them via getters")
@@ -21,7 +27,6 @@ class DefaultConfigResourceLocationTest {
     var resourceNames = ImmutableConfigSet.of(Set.of("config.yml", "secrets.yml"));
     var variables = ImmutableConfigMap.of(Map.of("env", "prod"));
     final String PROVIDER = "classpath";
-    var placeholder = mock(Placeholder.class);
 
     ConfigResourceLocation location = new DefaultConfigResourceLocation(
         PROVIDER,
@@ -43,7 +48,6 @@ class DefaultConfigResourceLocationTest {
   void shouldThrowWhenProviderIsNull() {
     var resourceNames = ImmutableConfigSet.of(Set.of("config.yml"));
     var variables = ImmutableConfigMap.of(Map.of("env", "prod"));
-    var placeholder = mock(Placeholder.class);
 
     assertThrows(NullPointerException.class, () ->
         new DefaultConfigResourceLocation(null, resourceNames, variables, false, placeholder)
@@ -54,7 +58,6 @@ class DefaultConfigResourceLocationTest {
   @DisplayName("should throw NullPointerException when resourceNames is null")
   void shouldThrowWhenResourceNamesIsNull() {
     var variables = ImmutableConfigMap.of(Map.of("env", "prod"));
-    var placeholder = mock(Placeholder.class);
 
     assertThrows(NullPointerException.class, () ->
         new DefaultConfigResourceLocation("classpath", null, variables, false, placeholder)
@@ -65,7 +68,6 @@ class DefaultConfigResourceLocationTest {
   @DisplayName("should throw NullPointerException when variables is null")
   void shouldThrowWhenVariablesIsNull() {
     var resourceNames = ImmutableConfigSet.of(Set.of("config.yml"));
-    var placeholder = mock(Placeholder.class);
 
     assertThrows(NullPointerException.class, () ->
         new DefaultConfigResourceLocation("classpath", resourceNames, null, false, placeholder)

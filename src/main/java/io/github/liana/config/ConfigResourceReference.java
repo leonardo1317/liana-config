@@ -1,28 +1,11 @@
 package io.github.liana.config;
 
-public class ConfigResourceReference {
+import static java.util.Objects.requireNonNull;
 
-  private final String provider;
-  private final String resourceName;
+public record ConfigResourceReference(String provider, String resourceName) {
 
-  public ConfigResourceReference(String provider, String resourceName) {
-    this.provider = provider;
-    this.resourceName = resourceName;
-  }
-
-  public String getProvider() {
-    return provider;
-  }
-
-  public String getResourceName() {
-    return resourceName;
-  }
-
-  @Override
-  public String toString() {
-    return "ConfigResourceReference{" +
-        "provider='" + provider + '\'' +
-        ", resourceName='" + resourceName + '\'' +
-        '}';
+  public ConfigResourceReference {
+    requireNonNull(provider, "provider must not be null");
+    requireNonNull(resourceName, "resourceName must not be null");
   }
 }
