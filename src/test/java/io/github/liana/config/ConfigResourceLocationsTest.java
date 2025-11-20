@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 
+import io.github.liana.config.api.ConfigResourceLocationBuilder;
+import io.github.liana.config.api.ConfigResourceLocations;
+import io.github.liana.config.core.DefaultConfigResourceLocationBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

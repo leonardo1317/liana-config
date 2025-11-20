@@ -3,6 +3,8 @@ package io.github.liana.config;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 
+import io.github.liana.config.api.PlaceholderBuilder;
+import io.github.liana.config.api.Placeholders;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

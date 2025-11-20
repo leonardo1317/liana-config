@@ -10,7 +10,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.github.liana.config.exception.MissingConfigException;
+import io.github.liana.config.api.Configuration;
+import io.github.liana.config.core.exception.MissingConfigException;
+import io.github.liana.config.core.type.TypeOf;
 import java.time.Duration;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
