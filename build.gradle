@@ -1,0 +1,68 @@
+plugins {
+    id 'java-library'
+    id 'jacoco'
+    id 'checkstyle'
+}
+
+group = 'io.github.liana'
+version = '0.1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+
+}
+
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, exclude: [
+                            '**/config/exception/**'
+                    ])
+                })
+        )
+    }
+}
+
+checkstyle {
+    toolVersion = '10.26.0'
+    configFile = file("${rootDir}/config/checkstyle/google_checks.xml")
+}
+
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        html.required.set(true)
+        xml.required.set(false)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.19.0")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.19.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.mockito:mockito-core:5.17.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.17.0")
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
