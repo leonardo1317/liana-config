@@ -1,8 +1,6 @@
-![Liana](banner-github-clean.png)
+![Liana](banner.png)
 
 # Liana Config
-
-&#x20;
 
 ---
 
