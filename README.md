@@ -49,7 +49,7 @@ Below are two diagrams:
 ### Configuration Resolution Flow
 ![Configuration Resolution Flow](docs/diagrams/configuration-flow.png)
 
-### Configuration Library Architecture (Abstract View)
+### Configuration Library Architecture
 ![Architecture Overview](docs/diagrams/architecture.png)
 
 ## Installation
