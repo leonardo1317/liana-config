@@ -1,4 +1,4 @@
-<img src="assets/banner.png" alt="Liana" width="380">
+<img src="docs/latest/assets/images/banner.png" alt="Liana" width="380">
 
 # Liana Config
 
